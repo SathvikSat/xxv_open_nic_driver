@@ -19,8 +19,8 @@
 
 #include "qdma_export.h"
 
-#define ONIC_MAX_CMACS			2
-#define ONIC_CMAC_CORE_VERSION		0x00000301
+#define ONIC_MAX_CMACS			2				/** TODO: instances for XXV */
+#define ONIC_CMAC_CORE_VERSION		0x00000301  /** TODO: Whats this */
 
 struct onic_hardware {
     int RS_FEC;

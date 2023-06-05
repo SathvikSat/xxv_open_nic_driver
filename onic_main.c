@@ -142,7 +142,7 @@ extern void onic_set_ethtool_ops(struct net_device *netdev);
  *
  * Return 0 on success, negative on failure
  **/
-static int onic_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+static int onic_probe(struct pci_dev *pdev, const struct `_id *ent)
 {
 	struct net_device *netdev;
 	struct onic_private *priv;
@@ -177,6 +177,7 @@ static int onic_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 
 	/* enable relaxed ordering */
 	pcie_capability_set_word(pdev, PCI_EXP_DEVCTL, PCI_EXP_DEVCTL_RELAX_EN);
+	
 	/* enable extended tag */
 	pcie_capability_set_word(pdev, PCI_EXP_DEVCTL, PCI_EXP_DEVCTL_EXT_TAG);
 	pci_set_master(pdev);
