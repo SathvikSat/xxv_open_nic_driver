@@ -40,7 +40,7 @@
 #define DEFAULT_H2C_THROT_REQ_THRES		0x60
 
 #define RX_ALIGN_TIMEOUT_MS			1000
-#define CMAC_RESET_WAIT_MS			1
+#define XXV_RESET_WAIT_MS			1
 
 static const u16 rngcnt_pool[QDMA_NUM_DESC_RNGCNT] = {
 	4096, 64, 128, 192, 256, 384, 512, 768,
@@ -176,51 +176,86 @@ static void onic_qdma_init_csr(struct qdma_dev *qdev)
 }
 
 
-static int onic_enable_cmac(struct onic_hardware *hw, u8 cmac_id)
+static int onic_enable_xxv( struct onic_hardware *hw, u8 xxv_id )
 {
-	if (cmac_id != 0 && cmac_id != 1)
+	/** ASK: Ids are 0 and 1? */
+	if (xxv_id != 0 && xxv_id != 1)
 		return -EINVAL;
-
-	if (cmac_id == 0) {
+	if ( xxv_id == 0 )
+	{
 		onic_write_reg(hw, SYSCFG_OFFSET_SHELL_RESET, 0x10);
 		while ((onic_read_reg(hw, SYSCFG_OFFSET_SHELL_STATUS) & 0x10) != 0x10)
-			mdelay(CMAC_RESET_WAIT_MS);
-	} else {
+			mdelay(XXV_RESET_WAIT_MS);
+	}
+	else {
 		onic_write_reg(hw, SYSCFG_OFFSET_SHELL_RESET, 0x100);
 		while ((onic_read_reg(hw, SYSCFG_OFFSET_SHELL_STATUS) & 0x100) != 0x100)
-			mdelay(CMAC_RESET_WAIT_MS);
+			mdelay(XXV_RESET_WAIT_MS);
 	}
 
-    if (hw->RS_FEC) {
-		/* Enable RS-FEC for CMACs with RS-FEC implemented */
-		onic_write_reg(hw, CMAC_OFFSET_RSFEC_CONF_ENABLE(cmac_id), 0x3);
-		onic_write_reg(hw, CMAC_OFFSET_RSFEC_CONF_IND_CORRECTION(cmac_id), 0x7);
+	/** Disabled for now, but can be enabled */
+	if (hw->RS_FEC) {
+		/* Enable RS-FEC for XXVs with RS-FEC implemented */
+		
+		/** TODO: change it for XXV */
+		/* onic_write_reg(hw, CMAC_OFFSET_RSFEC_CONF_ENABLE(cmac_id), 0x3);
+		onic_write_reg(hw, CMAC_OFFSET_RSFEC_CONF_IND_CORRECTION(cmac_id), 0x7); */
     }
+	
+	/** TODO: verify below 2 */
+	onic_write_reg(hw, XXV_OFFSET_CONF_RX_1(xxv_id), 0x1);
+	onic_write_reg(hw, XXV_OFFSET_CONF_TX_1(xxv_id), 0x10);
 
-	onic_write_reg(hw, CMAC_OFFSET_CONF_RX_1(cmac_id), 0x1);
-	onic_write_reg(hw, CMAC_OFFSET_CONF_TX_1(cmac_id), 0x10);
+	/** Rx flow control for XXV */
+	onic_write_reg(hw, XXV_OFFSET_CONF_RX_FC_CTRL_1(xxv_id), 0x00001DFF);
+	//onic_write_reg(hw, XXV_OFFSET_CONF_RX_FC_CTRL_2(xxv_id), 0x);
 
-	onic_write_reg(hw, CMAC_OFFSET_CONF_TX_1(cmac_id), 0x1);
+	/** Tx flow control 
+	 * ASK: In CMAC 31:16 are mentioned as reserved, XXV?
+	*/
+	onic_write_reg(hw, XXV_OFFSET_CONF_TX_FC_QNTA_1(xxv_id), 0xFFFFFFFF);
+	onic_write_reg(hw, XXV_OFFSET_CONF_TX_FC_QNTA_2(xxv_id), 0xFFFFFFFF);
+	onic_write_reg(hw, XXV_OFFSET_CONF_TX_FC_QNTA_3(xxv_id), 0xFFFFFFFF);
+	onic_write_reg(hw, XXV_OFFSET_CONF_TX_FC_QNTA_4(xxv_id), 0xFFFFFFFF);
+	onic_write_reg(hw, XXV_OFFSET_CONF_TX_FC_QNTA_5(xxv_id), 0x0000FFFF);
+	onic_write_reg(hw, XXV_OFFSET_CONF_TX_FC_RFRH_1(xxv_id), 0xFFFFFFFF);
+	onic_write_reg(hw, XXV_OFFSET_CONF_TX_FC_RFRH_2(xxv_id), 0xFFFFFFFF);
+	onic_write_reg(hw, XXV_OFFSET_CONF_TX_FC_RFRH_3(xxv_id), 0xFFFFFFFF);
+	onic_write_reg(hw, XXV_OFFSET_CONF_TX_FC_RFRH_4(xxv_id), 0xFFFFFFFF);
+	onic_write_reg(hw, XXV_OFFSET_CONF_TX_FC_RFRH_5(xxv_id), 0x0000FFFF);
+	onic_write_reg(hw, XXV_OFFSET_CONF_TX_FC_CTRL_1(xxv_id), 0x000001FF);
 
-	/* RX flow control */
-	onic_write_reg(hw, CMAC_OFFSET_CONF_RX_FC_CTRL_1(cmac_id), 0x00003DFF);
-	onic_write_reg(hw, CMAC_OFFSET_CONF_RX_FC_CTRL_2(cmac_id), 0x0001C631);
-
-	/* TX flow control */
-	onic_write_reg(hw, CMAC_OFFSET_CONF_TX_FC_QNTA_1(cmac_id), 0xFFFFFFFF);
-	onic_write_reg(hw, CMAC_OFFSET_CONF_TX_FC_QNTA_2(cmac_id), 0xFFFFFFFF);
-	onic_write_reg(hw, CMAC_OFFSET_CONF_TX_FC_QNTA_3(cmac_id), 0xFFFFFFFF);
-	onic_write_reg(hw, CMAC_OFFSET_CONF_TX_FC_QNTA_4(cmac_id), 0xFFFFFFFF);
-	onic_write_reg(hw, CMAC_OFFSET_CONF_TX_FC_QNTA_5(cmac_id), 0x0000FFFF);
-	onic_write_reg(hw, CMAC_OFFSET_CONF_TX_FC_RFRH_1(cmac_id), 0xFFFFFFFF);
-	onic_write_reg(hw, CMAC_OFFSET_CONF_TX_FC_RFRH_2(cmac_id), 0xFFFFFFFF);
-	onic_write_reg(hw, CMAC_OFFSET_CONF_TX_FC_RFRH_3(cmac_id), 0xFFFFFFFF);
-	onic_write_reg(hw, CMAC_OFFSET_CONF_TX_FC_RFRH_4(cmac_id), 0xFFFFFFFF);
-	onic_write_reg(hw, CMAC_OFFSET_CONF_TX_FC_RFRH_5(cmac_id), 0x0000FFFF);
-	onic_write_reg(hw, CMAC_OFFSET_CONF_TX_FC_CTRL_1(cmac_id), 0x000001FF);
-
+	
 	return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 int onic_init_hardware(struct onic_private *priv)
 {
@@ -278,16 +313,18 @@ int onic_init_hardware(struct onic_private *priv)
 
     hw->qdma = (unsigned long)qdev;
 
-	/* get the number of CMAC instances */
-	for (i = 0; i < ONIC_MAX_CMACS; ++i) {
+	/* get the number of XXV instances */
+	for (i = 0; i < ONIC_MAX_XXVS; ++i) {
+		/** TODO: offset version */
 		val = onic_read_reg(hw, CMAC_OFFSET_CORE_VERSION(i));
+		/** TODO: core version */
 		if (val != ONIC_CMAC_CORE_VERSION)
 			break;
 		if (master_pf)
-			onic_enable_cmac(hw, i);
+			onic_enable_xxv(hw, i);
 	}
-	hw->num_cmacs = i;
-	dev_info(&pdev->dev, "Number of CMAC instances = %d", hw->num_cmacs);
+	hw->num_xxvs = i;
+	dev_info(&pdev->dev, "Number of XXV instances = %d", hw->num_xxvs);
 
 	return 0;
 

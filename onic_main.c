@@ -48,7 +48,8 @@ MODULE_DESCRIPTION(DRV_STR);
 MODULE_LICENSE("Dual BSD/GPL");
 MODULE_VERSION(DRV_VER);
 
-static int RS_FEC_ENABLED=1;
+/** As per 10G/25G doc 100G RS-FEC is embedded in XXV as well */
+static int RS_FEC_ENABLED=0;
 module_param(RS_FEC_ENABLED, int, 0644);
 
 #ifdef CMS_SUPPORT

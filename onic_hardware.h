@@ -19,13 +19,13 @@
 
 #include "qdma_export.h"
 
-#define ONIC_MAX_CMACS			2				/** TODO: instances for XXV */
+#define ONIC_MAX_XXVS			2				/** TODO: instances for XXV */
 #define ONIC_CMAC_CORE_VERSION		0x00000301  /** TODO: Whats this */
 
 struct onic_hardware {
     int RS_FEC;
 	unsigned long qdma;
-	u8 num_cmacs;
+	u8 num_xxvs;
 	void __iomem *addr;	/* mapping of shell registers */
 };
 

@@ -29,11 +29,13 @@ static inline void onic_write_reg(struct onic_hardware *hw, u32 offset, u32 val)
 	iowrite32(val, hw->addr + offset);
 }
 
+/** ASK: Is this register space part of  FPGA? */
 #define SHELL_START					0x0
 #define SHELL_END					0x400000 /* include CMS register space, 0x320000 to 0x330000 */
 #define SHELL_MAXLEN					(SHELL_END - SHELL_START)
 
 /***** system config registers *****/
+/** ASK: system config registers are fine for xxv? */
 #define SYSCFG_OFFSET					0x0
 
 #define SYSCFG_OFFSET_BUILD_STATUS			(SYSCFG_OFFSET + 0x0)
@@ -64,9 +66,9 @@ static inline void onic_write_reg(struct onic_hardware *hw, u32 offset, u32 val)
 #define XXV_QSFP_OFFSET(i)				(XXV_SUBSYSTEM_OFFSET(i) + 0x2000) //Unused as of version 1 of openNic Shell
 #define XXV_ADPT_OFFSET(i)				(XXV_SUBSYSTEM_OFFSET(i) + 0x3000)
 
-/* CMAC Configuration Registers */
-#define CMAC_OFFSET_GT_RESET(i)				(XXV_OFFSET(i) + 0x0000)
-#define CMAC_OFFSET_RESET(i)				(XXV_OFFSET(i) + 0x0004)
+/* XXV Configuration Registers */
+#define XXV_OFFSET_GT_RESET(i)				(XXV_OFFSET(i) + 0x0000)
+#define XXV_OFFSET_RESET(i)				(XXV_OFFSET(i) + 0x0004)
 #define XXV_OFFSET_SWITCH_CORE_MODE(i)			(XXV_OFFSET(i) + 0x0008)
 
 #define XXV_OFFSET_CONF_TX_1(i)							(XXV_OFFSET(i) + 0x000C)
@@ -134,6 +136,7 @@ static inline void onic_write_reg(struct onic_hardware *hw, u32 offset, u32 val)
 #define XXV_VERSAL_CHANNEL_NUM(i)    				    (XXV_OFFSET(i) + 0x014C)					
 #define XXV_GT_WIZ_CONTROL(i)    						(XXV_OFFSET(i) + 0x0154)					
 
+/** TODO: Status registers not yet handled for XXV */
 /* CMAC Status Registers */
 #define CMAC_OFFSET_STAT_TX_STATUS(i)			(CMAC_OFFSET(i) + 0x0200)
 #define CMAC_OFFSET_STAT_RX_STATUS(i)			(CMAC_OFFSET(i) + 0x0204)
